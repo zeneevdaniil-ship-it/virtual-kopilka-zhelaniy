@@ -1,0 +1,12 @@
+:root {
+  --bg: #f5f7fb;
+  --panel: #ffffff;
+  --text: #1f2937;
+  --accent: #7c3aed;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, sans-serif; background: var(--bg); color: var(--text); }
+.header { padding: 16px 24px; background: var(--panel); border-bottom: 1px solid #e5e7eb; }
+.container { max-width: 980px; margin: 0 auto; padding: 20px; }
+a { color: var(--accent); text-decoration: none; }
