@@ -10,3 +10,8 @@ body { margin: 0; font-family: Arial, sans-serif; background: var(--bg); color: 
 .header { padding: 16px 24px; background: var(--panel); border-bottom: 1px solid #e5e7eb; }
 .container { max-width: 980px; margin: 0 auto; padding: 20px; }
 a { color: var(--accent); text-decoration: none; }
+.hero { background: var(--panel); padding: 20px; border-radius: 12px; }
+.card-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.card { background: var(--panel); border-radius: 12px; padding: 14px; }
+.btn { display: inline-block; padding: 10px 14px; border-radius: 10px; background: var(--accent); color: #fff; }
+.muted { color: #6b7280; }
