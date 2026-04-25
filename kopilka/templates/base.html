@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>WishBox - Day 1</title>
+  <title>WishBox</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
   <header class="header">
     <h1>WishBox</h1>
-    <nav><a href='/'>Главная</a></nav>
+    <nav><a href='/'>Главная</a> | <a href='/about'>О проекте</a> | <a href='/dashboard'>Панель</a> | <a href='/auth/login'>Вход</a> | <a href='/auth/register'>Регистрация</a> | <a href='/wish/create'>Создать желание</a> | <a href='/wish/my'>Мои желания</a></nav>
   </header>
   <main class="container">
     {% block content %}{% endblock %}
