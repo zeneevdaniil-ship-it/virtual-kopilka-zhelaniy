@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Создать желание - Копилка Желаний{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Создать новое желание</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('wish.create') }}" enctype="multipart/form-data" novalidate>
+                    {{ form.csrf_token }}
+                    {% if form.csrf_token.errors %}
+                        <div class="alert alert-danger">CSRF token error</div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label" for="title">{{ form.title.label }} <span class="text-danger">*</span></label>
+                        {{ form.title(class="form-control" + (' is-invalid' if form.title.errors else ''), id="title", placeholder="Например: Новый велосипед") }}
+                        {% if form.title.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.title.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.description.label }}</label>
+                        {{ form.description(class="form-control", rows=3, placeholder="Подробности о желании...") }}
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.wish_type.label }} <span class="text-danger">*</span></label>
+                            {{ form.wish_type(class="form-select", id="wishType") }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="target_amount">{{ form.target_amount.label }} <span class="text-danger">*</span></label>
+                            {{ form.target_amount(class="form-control" + (' is-invalid' if form.target_amount.errors else ''), id="target_amount", step="0.01", placeholder="10000") }}
+                            {% if form.target_amount.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.target_amount.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.unit_label.label }}</label>
+                            {{ form.unit_label(class="form-select", id="unitLabel") }}
+                        </div>
+                        <div class="col-md-6" id="customUnitContainer" style="display: none;">
+                            <label class="form-label">{{ form.custom_unit.label }}</label>
+                            {{ form.custom_unit(class="form-control", placeholder="Своя единица") }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.deadline.label }}</label>
+                        {{ form.deadline(class="form-control", type="date") }}
+                        <div class="form-text">Если указать дедлайн, мы рассчитаем сколько нужно откладывать каждый день</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.icon.label }}</label>
+                        {{ form.icon(class="form-control", accept=".png,.jpg,.jpeg,.gif,.webp,image/png,image/jpeg,image/gif,image/webp") }}
+                        <div class="form-text">Загрузите иконку для желания (необязательно)</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            {{ form.is_public(class="form-check-input") }}
+                            {{ form.is_public.label(class="form-check-label") }}
+                        </div>
+                        <div class="form-text">Публичные желания видны в ленте желаний</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check">
+                            {{ form.is_magic_slot_enabled(class="form-check-input", checked=True) }}
+                            {{ form.is_magic_slot_enabled.label(class="form-check-label") }}
+                        </div>
+                        <div class="form-text">Позволяет случайным образом пополнять это желание через Магический слот</div>
+                    </div>
+
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('unitLabel').addEventListener('change', function() {
+    const customContainer = document.getElementById('customUnitContainer');
+    if (this.value === 'другое') {
+        customContainer.style.display = 'block';
+    } else {
+        customContainer.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}

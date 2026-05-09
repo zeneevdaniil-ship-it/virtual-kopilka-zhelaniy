@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}{{ wish.title }} - Копилка Желаний{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="flower-display text-center py-4 {{ 'wilting' if wish.wilting_days > 3 }}">
+                    {% if wish.icon_path %}
+                    <div class="mb-3">
+                        <img src="{{ url_for('static', filename='uploads/' + wish.icon_path) }}"
+                             alt="Иконка желания"
+                             class="wish-avatar-detail">
+                    </div>
+                    {% else %}
+                    <div class="flower-stage-large {{ wish.flower_stage }}">
+                        {% if wish.flower_stage == 'seed' %}
+                            <i class="bi bi-circle-fill"></i>
+                        {% elif wish.flower_stage == 'sprout' %}
+                            <i class="bi bi-seedling"></i>
+                        {% elif wish.flower_stage == 'growing' %}
+                            <i class="bi bi-tree"></i>
+                        {% elif wish.flower_stage == 'bud' %}
+                            <i class="bi bi-flower2"></i>
+                        {% elif wish.flower_stage == 'flower' %}
+                            <i class="bi bi-flower1"></i>
+                        {% elif wish.flower_stage == 'bloom' %}
+                            <i class="bi bi-stars"></i>
+                        {% elif wish.flower_stage == 'wilted' %}
+                            <i class="bi bi-emoji-frown"></i>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if wish.wilting_days > 0 %}
+                    <div class="wilting-notice mt-3">
+                        <i class="bi bi-droplet-fill text-danger"></i>
+                        Нет пополнений {{ wish.wilting_days }} дней
+                    </div>
+                    {% endif %}
+                </div>
+
+                <h2 class="text-center mb-2">{{ wish.title }}</h2>
+                {% if wish.description %}
+                    <p class="text-muted text-center">{{ wish.description }}</p>
+                {% endif %}
+
+                <div class="progress-section my-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="fw-bold">Прогресс</span>
+                        <span class="text-muted">{{ "%.0f"|format(wish.current_amount) }} / {{ "%.0f"|format(wish.target_amount) }} {{ wish.unit_label }}</span>
+                    </div>
+                    <div class="progress" style="height: 30px;">
+                        <div class="progress-bar progress-bar-striped fs-6"
+                             role="progressbar"
+                             style="width: {{ wish.growth_percent }}%"
+                             aria-valuenow="{{ wish.growth_percent }}"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                            {{ wish.growth_percent }}%
+                        </div>
+                    </div>
+                </div>
+                {% if wish.deadline %}
+                <div class="deadline-info p-3 bg-light rounded mb-3">
+                    <div class="row text-center">
+                        <div class="col-sm-4">
+                            <div class="text-muted small">Дедлайн</div>
+                            <div class="fw-bold">{{ (wish.deadline|utc5).strftime('%d.%m.%Y') }}</div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="text-muted small">Осталось дней</div>
+                            <div class="fw-bold {{ 'text-danger' if days_remaining < 7 }}">{{ days_remaining }}</div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="text-muted small">В день нужно</div>
+                            <div class="fw-bold">{{ "%.0f"|format(daily_target) }} {{ wish.unit_label }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if is_owner and not wish.is_completed %}
+                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#contributeModal">
+                        <i class="bi bi-plus-circle me-1"></i>Пополнить
+                    </button>
+
+                    <a href="{{ url_for('wish.magic_slot') }}" class="btn btn-outline-magic">
+                        <i class="bi bi-magic me-1"></i>Магический слот
+                    </a>
+
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#completeModal">
+                        <i class="bi bi-check-circle me-1"></i>Исполнено!
+                    </button>
+
+                    <form method="POST" action="{{ url_for('wish.toggle_public', wish_id=wish.id) }}" class="d-inline">
+                        {{ contribution_form.csrf_token }}
+                        <button type="submit" class="btn btn-outline-secondary">
+                            {% if wish.is_public %}
+                                <i class="bi bi-eye-slash me-1"></i>Скрыть
+                            {% else %}
+                                <i class="bi bi-share me-1"></i>Поделиться
+                            {% endif %}
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+
+                {% if wish.is_public %}
+                <div class="text-center mt-3">
+                    <span class="badge bg-info"><i class="bi bi-eye me-1"></i>Публичное желание</span>
+                    <span class="badge bg-secondary"><i class="bi bi-hand-thumbs-up me-1"></i>{{ vote_count }} голосов</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if contributions %}
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>История пополнений</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for contrib in contributions %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            {% if contrib.is_magic %}
+                                <span class="badge bg-magic me-2">Магия</span>
+                            {% endif %}
+                            <span class="fw-bold text-success">+{{ contrib.amount }} {{ wish.unit_label }}</span>
+                            {% if contrib.note %}
+                                <small class="text-muted d-block">{{ contrib.note }}</small>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted">{{ (contrib.created_at|utc5).strftime('%d.%m.%Y %H:%M') }}</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        {% if not is_owner and wish.is_public %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-body text-center">
+                <h5><i class="bi bi-hand-thumbs-up me-2"></i>Голосование</h5>
+                <p class="text-muted small">Голосуйте за желания, которые считаете важными</p>
+                <form method="POST" action="{{ url_for('wish.vote', wish_id=wish.id) }}">
+                    {{ vote_form.hidden_tag() }}
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-heart me-1"></i>Голосовать
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Информация</h5>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Тип</span>
+                    <span class="badge bg-secondary">{{ 'Накопление' if wish.wish_type == 'money' else 'Прогресс' }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Цель</span>
+                    <span class="fw-bold">{{ wish.target_amount }} {{ wish.unit_label }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Накоплено</span>
+                    <span class="fw-bold text-success">{{ wish.current_amount }} {{ wish.unit_label }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Осталось</span>
+                    <span class="fw-bold text-warning">{{ wish.target_amount - wish.current_amount }} {{ wish.unit_label }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Создано</span>
+                    <span>{{ (wish.created_at|utc5).strftime('%d.%m.%Y') }}</span>
+                </li>
+            </ul>
+        </div>
+
+        {% if is_owner %}
+        <div class="card shadow-sm border-danger">
+            <div class="card-body">
+                <h6 class="text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Опасная зона</h6>
+                <p class="text-muted small">Удаление желания нельзя отменить</p>
+                <form method="POST" action="{{ url_for('wish.delete', wish_id=wish.id) }}" onsubmit="return confirm('Вы уверены, что хотите удалить это желание?');">
+                    {{ contribution_form.csrf_token }}
+                    <button type="submit" class="btn btn-outline-danger w-100">
+                        <i class="bi bi-trash me-1"></i>Удалить желание
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if is_owner and not wish.is_completed %}
+<div class="modal fade" id="contributeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Пополнить желание</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('wish.contribute', wish_id=wish.id) }}">
+                {{ contribution_form.hidden_tag() }}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Сумма / Количество</label>
+                        {{ contribution_form.amount(class="form-control", step="0.01", min="0.01", required=True) }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Примечание (необязательно)</label>
+                        {{ contribution_form.note(class="form-control", placeholder="Например: Сэкономил на обеде") }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Пополнить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="completeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-check-circle me-2"></i>Желание исполнено!</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="display-1 text-success mb-3">
+                    <i class="bi bi-stars"></i>
+                </div>
+                <h5>Поздравляем!</h5>
+                <p>Вы достигли цели "{{ wish.title }}". Желание будет перенесено в галерею достижений.</p>
+            </div>
+            <div class="modal-footer">
+                <form method="POST" action="{{ url_for('wish.complete', wish_id=wish.id) }}">
+                    {{ complete_form.hidden_tag() }}
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Пока нет</button>
+                    <button type="submit" class="btn btn-success">Исполнено!</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
