@@ -1,11 +1,9 @@
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
+import secrets
 
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'your-secret-key-here-change-in-production'
+    SECRET_KEY = secrets.token_hex(32)
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///wishbox.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
