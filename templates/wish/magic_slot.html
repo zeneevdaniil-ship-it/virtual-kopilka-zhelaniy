@@ -45,17 +45,28 @@
                     {{ form.hidden_tag() }}
 
                     <div class="mb-4">
+                        <label class="form-label fw-bold">{{ form.unit_label.label }}</label>
+                        {{ form.unit_label(class="form-select form-select-lg") }}
+                        {% if form.unit_label.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.unit_label.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text text-center">Слот распределит вклад только по желаниям с выбранной единицей</div>
+                    </div>
+
+                    <div class="mb-4">
                         <label class="form-label fw-bold">{{ form.amount.label }}</label>
                         <div class="input-group input-group-lg">
                             {{ form.amount(class="form-control text-center", placeholder="100", type="number", step="1", min="1") }}
-                            <span class="input-group-text"><i class="bi bi-currency-ruble"></i></span>
+                            <span class="input-group-text"><i class="bi bi-plus-circle"></i></span>
                         </div>
                         {% if form.amount.errors %}
                             <div class="text-danger mt-1">
                                 {% for error in form.amount.errors %}{{ error }}{% endfor %}
                             </div>
                         {% endif %}
-                        <div class="form-text text-center">Введите сумму, которую хотите внести</div>
+                        <div class="form-text text-center">Введите количество для выбранной единицы</div>
                     </div>
 
                     <div class="d-grid">

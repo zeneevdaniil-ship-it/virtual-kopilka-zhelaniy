@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user
-from .models import Wish, db
+from routes.models import Wish, db
 
 feed_bp = Blueprint('feed', __name__, url_prefix='/feed')
 
@@ -43,7 +43,7 @@ def user_wishes(user_id):
 @feed_bp.route('/vote/<int:wish_id>', methods=['POST'])
 @login_required
 def vote_wish(wish_id):
-    from .models import Vote
+    from routes.models import Vote
 
     wish = Wish.query.get_or_404(wish_id)
 

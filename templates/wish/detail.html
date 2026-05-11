@@ -131,7 +131,11 @@
                             {% if contrib.is_magic %}
                                 <span class="badge bg-magic me-2">Магия</span>
                             {% endif %}
-                            <span class="fw-bold text-success">+{{ contrib.amount }} {{ wish.unit_label }}</span>
+                            {% if contrib.amount >= 0 %}
+                                <span class="fw-bold text-success">+{{ contrib.amount }} {{ wish.unit_label }}</span>
+                            {% else %}
+                                <span class="fw-bold text-danger">{{ contrib.amount }} {{ wish.unit_label }}</span>
+                            {% endif %}
                             {% if contrib.note %}
                                 <small class="text-muted d-block">{{ contrib.note }}</small>
                             {% endif %}
@@ -217,6 +221,12 @@
             <form method="POST" action="{{ url_for('wish.contribute', wish_id=wish.id) }}">
                 {{ contribution_form.hidden_tag() }}
                 <div class="modal-body">
+                    {% if wish.wish_type == 'money' %}
+                    <div class="mb-3">
+                        <label class="form-label">Операция</label>
+                        {{ contribution_form.operation(class="form-select") }}
+                    </div>
+                    {% endif %}
                     <div class="mb-3">
                         <label class="form-label">Сумма / Количество</label>
                         {{ contribution_form.amount(class="form-control", step="0.01", min="0.01", required=True) }}

@@ -428,6 +428,71 @@ main.container-fluid,
     border: 4px solid var(--success);
 }
 
+.reward-celebrate-icon {
+    width: 110px;
+    height: 110px;
+    border-radius: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 50%, #ecfdf5 100%);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-lg);
+}
+
+[data-theme="dark"] .reward-celebrate-icon {
+    background: linear-gradient(135deg, #111827 0%, #1f2937 60%, #374151 100%);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.reward-celebrate-icon i {
+    font-size: 3.2rem;
+}
+
+.rewards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.reward-chip {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 12px;
+    background: var(--bg-card);
+    box-shadow: var(--shadow);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.reward-chip .reward-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    flex-shrink: 0;
+}
+
+.reward-chip .reward-icon i {
+    font-size: 1.4rem;
+}
+
+.reward-chip .reward-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1.1;
+}
+
+.reward-chip .reward-meta {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
 .achievement-card-mini {
     background: var(--bg-card);
     border-radius: 12px;

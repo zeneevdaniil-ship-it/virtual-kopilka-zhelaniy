@@ -1,14 +1,17 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, LoginManager
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta
+import random
 
 db = SQLAlchemy()
 login_manager = LoginManager()
 
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -130,7 +133,6 @@ class Wish(db.Model):
         self.growth_percent = 100
         self.flower_stage = 'bloom'
 
-        # перенос в достижения
         achievement = Achievement(
             user_id=self.user_id,
             wish_id=self.id,

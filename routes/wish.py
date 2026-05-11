@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
-from .models import Wish, Contribution, Vote, db, MagicSlotSession
-from .forms import WishForm, ContributionForm, MagicSlotForm, CompleteWishForm, VoteForm
+from routes.models import Wish, Contribution, Vote, db, MagicSlotSession
+from routes.forms import WishForm, ContributionForm, MagicSlotForm, CompleteWishForm, VoteForm
 from werkzeug.utils import secure_filename
-from .config import Config
+from routes.config import Config
 import os
 import random
 from datetime import datetime
@@ -61,7 +61,6 @@ def create():
                 db.session.add(wish)
                 db.session.commit()
 
-                # пересчет после создания
                 if deadline:
                     wish.calculate_daily_target()
                 wish.update_flower_stage()
@@ -136,12 +135,34 @@ def contribute(wish_id):
 
     form = ContributionForm()
     if form.validate_on_submit():
-        wish.add_contribution(form.amount.data, form.note.data)
-        flash(f'Добавлено {form.amount.data} {wish.unit_label}!', 'success')
+        amount = form.amount.data
+        operation = form.operation.data if wish.wish_type == 'money' else 'add'
+
+        signed_amount = amount
+        note_prefix = None
+
+        if operation == 'subtract':
+            if amount > wish.current_amount:
+                flash('Нельзя вычесть больше, чем уже накоплено', 'danger')
+                return redirect(url_for('wish.detail', wish_id=wish.id))
+            signed_amount = -amount
+            note_prefix = 'Снятие'
+
+        note = form.note.data
+        if note_prefix:
+            note = f'{note_prefix}: {note}' if note else note_prefix
+
+        wish.add_contribution(signed_amount, note)
+
+        if operation == 'subtract':
+            flash(f'Вычтено {amount} {wish.unit_label}!', 'success')
+        else:
+            flash(f'Добавлено {amount} {wish.unit_label}!', 'success')
 
         if wish.is_completed:
             flash('Поздравляем! Желание исполнено!', 'success')
-            return redirect(url_for('main.achievements'))
+            reward_id = _pick_completion_reward_id(wish)
+            return redirect(url_for('main.achievements', celebrate=1, reward_id=reward_id, wish=wish.title))
 
     return redirect(url_for('wish.detail', wish_id=wish.id))
 
@@ -163,9 +184,15 @@ def complete(wish_id):
     if form.validate_on_submit():
         wish.complete_wish()
         flash('Поздравляем! Желание исполнено и перенесено в галерею достижений!', 'success')
-        return redirect(url_for('main.achievements'))
+        reward_id = _pick_completion_reward_id(wish)
+        return redirect(url_for('main.achievements', celebrate=1, reward_id=reward_id, wish=wish.title))
 
     return redirect(url_for('wish.detail', wish_id=wish.id))
+
+
+def _pick_completion_reward_id(wish: Wish) -> int:
+    base = 1 if getattr(wish, 'wish_type', None) == 'money' else 26
+    return int(base + random.randint(0, 24))
 
 
 @wish_bp.route('/<int:wish_id>/vote', methods=['POST'])
@@ -213,18 +240,28 @@ def magic_slot():
 
     wishes = Wish.query.filter_by(
         user_id=current_user.id,
+        wish_type='money',
         is_completed=False,
         is_magic_slot_enabled=True
     ).all()
 
     if not wishes:
-        flash('У вас нет активных желаний, участвующих в Магическом слоте. Создайте желание или включите опцию "Магический слот" в существующих.', 'warning')
+        flash('У вас нет активных денежных желаний, участвующих в Магическом слоте. Создайте денежное желание или включите опцию "Магический слот" в существующем.', 'warning')
         return redirect(url_for('main.index'))
+
+    unique_units = sorted({wish.unit_label for wish in wishes})
+    form.unit_label.choices = [(unit, unit) for unit in unique_units]
 
     if form.validate_on_submit():
         amount = form.amount.data
+        selected_unit = form.unit_label.data
+        filtered_wishes = [wish for wish in wishes if wish.unit_label == selected_unit]
 
-        pick_wish = random.choice(wishes)
+        if not filtered_wishes:
+            flash('Для выбранной единицы сейчас нет доступных желаний', 'warning')
+            return redirect(url_for('wish.magic_slot'))
+
+        pick_wish = random.choice(filtered_wishes)
 
         spin = MagicSlotSession(
             user_id=current_user.id,
@@ -235,7 +272,7 @@ def magic_slot():
 
         pick_wish.add_contribution(amount, 'Магический слот', is_magic=True)
 
-        flash(f'Монетка в {amount} {pick_wish.unit_label} упала в желание "{pick_wish.title}"!', 'success')
+        flash(f'Монетка в {amount} {selected_unit} упала в желание "{pick_wish.title}"!', 'success')
         return redirect(url_for('wish.detail', wish_id=pick_wish.id))
 
     return render_template('wish/magic_slot.html', form=form, wishes=wishes)

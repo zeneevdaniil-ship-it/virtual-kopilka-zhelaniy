@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, redirect, url_for, flash
+from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
-from .models import Wish, Achievement, db
-from .forms import CompleteWishForm
+from routes.models import Wish, Achievement, db
+from routes.forms import CompleteWishForm
 
 main_bp = Blueprint('main', __name__)
 
@@ -45,4 +45,27 @@ def achievements():
         user_id=current_user.id
     ).order_by(Achievement.completed_at.desc()).all()
 
-    return render_template('achievements.html', achievements=user_achievements)
+    celebrate = request.args.get('celebrate', default='0')
+    reward_id = request.args.get('reward_id', default=None)
+    wish_title = request.args.get('wish', default=None)
+
+    if reward_id is None:
+        reward_id = request.args.get('reward', default=None)
+
+    try:
+        celebrate = bool(int(celebrate))
+    except Exception:
+        celebrate = False
+
+    try:
+        reward_id = int(reward_id) if reward_id is not None else None
+    except Exception:
+        reward_id = None
+
+    return render_template(
+        'achievements.html',
+        achievements=user_achievements,
+        celebrate=celebrate,
+        reward_id=reward_id,
+        wish_title=wish_title,
+    )

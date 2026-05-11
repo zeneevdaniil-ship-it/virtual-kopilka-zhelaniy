@@ -1,9 +1,10 @@
 from flask import Flask
-from config import Config
-from models import db, login_manager
+from routes.config import Config
+from routes.models import db, login_manager
 from flask_login import LoginManager
 import os
 from datetime import timedelta
+
 
 def create_app():
     app = Flask(__name__)
@@ -36,6 +37,7 @@ def create_app():
         db.create_all()
 
     return app
+
 
 app = create_app()
 
