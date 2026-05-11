@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Виртуальная Копилка Желаний{% endblock %}
+
+{% block content %}
+<div class="row align-items-center py-5">
+    <div class="col-lg-6">
+        <h1 class="display-4 fw-bold mb-4">
+            Воплощайте мечты
+            <br>
+            <span class="text-primary">по капле</span>
+        </h1>
+        <p class="lead mb-4">
+            Создайте свою виртуальную копилку желаний. Отслеживайте прогресс целей,
+            накапливайте на мечты и делитесь успехами с друзьями.
+        </p>
+        <div class="d-flex gap-3">
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg px-4">
+                <i class="bi bi-rocket-takeoff me-2"></i>Начать
+            </a>
+            <a href="#features" class="btn btn-outline-secondary btn-lg px-4">
+                Подробнее
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-6 text-center">
+        <div class="hero-animation">
+            <img src="{{ url_for('static', filename='img/главная страница.png') }}"
+                 alt="Главная иллюстрация"
+                 class="hero-custom-image"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <div class="flower-stage flower-bloom" style="display:none;">
+                <i class="bi bi-flower1"></i>
+            </div>
+            <div class="coins-float">
+                <i class="bi bi-coin"></i>
+                <i class="bi bi-coin"></i>
+                <i class="bi bi-coin"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="features" class="py-5">
+    <h2 class="text-center mb-5">Возможности копилки</h2>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="feature-card h-100">
+                <div class="feature-icon">
+                    <i class="bi bi-flower1"></i>
+                </div>
+                <h4>Визуальный прогресс</h4>
+                <p class="text-muted">
+                    Каждая цель отображает текущий прогресс в процентах.
+                    Чем больше вы добавляете, тем ближе к результату.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="feature-card h-100">
+                <div class="feature-icon">
+                    <i class="bi bi-magic"></i>
+                </div>
+                <h4>Магический слот</h4>
+                <p class="text-muted">
+                    Бросьте монетку в "копилку мира" и пусть случай выберет,
+                    какое желание пополнить сегодня. Спонтанные радости!
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="feature-card h-100">
+                <div class="feature-icon">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+                <h4>Режим Дедлайн</h4>
+                <p class="text-muted">
+                    Установите дату исполнения желания. Сайт рассчитает,
+                    сколько нужно откладывать каждый день.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="feature-card h-100">
+                <div class="feature-icon">
+                    <i class="bi bi-people"></i>
+                </div>
+                <h4>Лента желаний</h4>
+                <p class="text-muted">
+                    Делитесь желаниями с друзьями. Голосуйте за приоритеты
+                    других пользователей. Вдохновляйтесь чужими мечтами.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="feature-card h-100">
+                <div class="feature-icon">
+                    <i class="bi bi-trophy"></i>
+                </div>
+                <h4>Галерея достижений</h4>
+                <p class="text-muted">
+                    Когда желание исполнено, оно переходит в галерею.
+                    Наглядная история ваших успехов и достижений.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="feature-card h-100">
+                <div class="feature-icon">
+                    <i class="bi bi-brightness-high"></i>
+                </div>
+                <h4>Два типа желаний</h4>
+                <p class="text-muted">
+                    Не только деньги! Отслеживайте прогресс: километры пробежек,
+                    страницы прочитанных книг, часы обучения.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cta-section text-center py-5 mt-5">
+    <h2 class="mb-4">Готовы начать путь к мечтам?</h2>
+    <p class="lead mb-4">
+        Присоединяйтесь к сообществу мечтателей. Создайте свою первую копилку
+        желаний прямо сейчас!
+    </p>
+    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg px-5">
+        Создать копилку
+    </a>
+</div>
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Моя копилка - Копилка Желаний{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="mb-2">Привет, {{ current_user.name }}! <i class="bi bi-emoji-smile"></i></h1>
+        <p class="text-muted">Следите за прогрессом ваших желаний и регулярно пополняйте цели</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{{ url_for('wish.create') }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle me-2"></i>Новое желание
+        </a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-heart text-danger"></i>
+            </div>
+            <div class="stat-value">{{ total_wishes }}</div>
+            <div class="stat-label">Всего желаний</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-check-circle text-success"></i>
+            </div>
+            <div class="stat-value">{{ completed_wishes }}</div>
+            <div class="stat-label">Исполнено</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-cash-coin text-warning"></i>
+            </div>
+            <div class="stat-value">{{ "%.0f"|format(total_saved) }}</div>
+            <div class="stat-label">Всего накоплено</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-magic text-primary"></i>
+            </div>
+            <div class="stat-value">
+                <a href="{{ url_for('wish.magic_slot') }}" class="btn btn-outline-primary btn-sm">Играть</a>
+            </div>
+            <div class="stat-label">Магический слот</div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">
+        <i class="bi bi-list-check me-2 text-success"></i>Мои активные желания
+    </h2>
+    <a href="{{ url_for('wish.my_wishes') }}" class="btn btn-outline-secondary btn-sm">
+        Все желания <i class="bi bi-arrow-right"></i>
+    </a>
+</div>
+
+{% if wishes %}
+    <div class="row g-4">
+        {% for wish in wishes %}
+        <div class="col-md-6 col-lg-4">
+            <div class="wish-card {{ 'wilting' if wish.wilting_days > 2 }}"
+                 onclick="window.location='{{ url_for('wish.detail', wish_id=wish.id) }}'"
+                 style="cursor: pointer;">
+
+                <div class="flower-container text-center py-3">
+                    {% if wish.icon_path %}
+                        <img src="{{ url_for('static', filename='uploads/' + wish.icon_path) }}"
+                             alt="Иконка желания"
+                             class="wish-avatar mb-2">
+                    {% else %}
+                    <div class="flower-stage {{ wish.flower_stage }}">
+                        {% if wish.flower_stage == 'seed' %}
+                            <i class="bi bi-circle-fill"></i>
+                        {% elif wish.flower_stage == 'sprout' %}
+                            <i class="bi bi-seedling"></i>
+                        {% elif wish.flower_stage == 'growing' %}
+                            <i class="bi bi-tree"></i>
+                        {% elif wish.flower_stage == 'bud' %}
+                            <i class="bi bi-flower2"></i>
+                        {% elif wish.flower_stage == 'flower' %}
+                            <i class="bi bi-flower1"></i>
+                        {% elif wish.flower_stage == 'bloom' %}
+                            <i class="bi bi-stars"></i>
+                        {% elif wish.flower_stage == 'wilted' %}
+                            <i class="bi bi-emoji-frown"></i>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if wish.wilting_days > 2 %}
+                    <div class="wilting-badge">
+                        <i class="bi bi-droplet"></i> Полейте!
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="wish-info p-3">
+                    <h5 class="text-truncate">{{ wish.title }}</h5>
+                    <div class="progress mb-2">
+                        <div class="progress-bar progress-bar-striped"
+                             role="progressbar"
+                             style="width: {{ wish.growth_percent }}%"
+                             aria-valuenow="{{ wish.growth_percent }}"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">
+                            {{ "%.0f"|format(wish.current_amount) }} / {{ "%.0f"|format(wish.target_amount) }} {{ wish.unit_label }}
+                        </span>
+                        <span class="badge {{ 'bg-success' if wish.growth_percent >= 75 else 'bg-primary' if wish.growth_percent >= 50 else 'bg-info' if wish.growth_percent >= 25 else 'bg-secondary' }}">
+                            {{ wish.growth_percent }}%
+                        </span>
+                    </div>
+
+                    {% if wish.deadline %}
+                    <div class="mt-2 small text-muted">
+                        <i class="bi bi-clock me-1"></i>
+                        Дедлайн: {{ (wish.deadline|utc5).strftime('%d.%m.%Y') }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-flower1 display-1 text-muted"></i>
+        <h3 class="mt-3 text-muted">У вас пока нет активных желаний</h3>
+        <p class="text-muted">Создайте свое первое желание и начните путь к цели!</p>
+        <a href="{{ url_for('wish.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Создать желание
+        </a>
+    </div>
+{% endif %}
+
+{% if recent_achievements %}
+<div class="mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">
+            <i class="bi bi-trophy me-2 text-warning"></i>Последние достижения
+        </h2>
+        <a href="{{ url_for('main.achievements') }}" class="btn btn-outline-secondary btn-sm">
+            Все достижения <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+
+    <div class="row g-3">
+        {% for achievement in recent_achievements %}
+        <div class="col-md-4">
+            <div class="achievement-card-mini">
+                <div class="d-flex align-items-center">
+                    <div class="achievement-icon">
+                        {% if achievement.icon_path %}
+                        <img src="{{ url_for('static', filename='uploads/' + achievement.icon_path) }}" alt="">
+                        {% else %}
+                        <i class="bi bi-trophy-fill"></i>
+                        {% endif %}
+                    </div>
+                    <div class="ms-3">
+                        <h6 class="mb-0">{{ achievement.title }}</h6>
+                        <div class="text-muted small">
+                            {{ (achievement.completed_at|utc5).strftime('%d.%m.%Y') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
