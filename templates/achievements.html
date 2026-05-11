@@ -139,7 +139,6 @@
       }).join('');
     }
 
-    // Celebration modal (optional)
     const celebrate = {{ 'true' if celebrate else 'false' }};
     const rewardId = {{ reward_id if reward_id is not none else 'null' }};
     const wishTitle = {{ wish_title|tojson if wish_title else 'null' }};
